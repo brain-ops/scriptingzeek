@@ -1,0 +1,77 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 @load base/protocols/dns\
+\
+# Set up tables to keep track of data\
+global dns_count: table[addr] of count = table();\
+global dns_size: table[addr] of count = table();\
+global dns_dest: table[addr] of count = table();\
+\
+event dns_request(c: connection, msg: dns_msg, query: string, qtype: count, qclass: count) \{\
+    # Count DNS requests by IP address\
+    local src_ip = c$id$orig_h;\
+    if (src_ip in dns_count) \{\
+        dns_count[src_ip] += 1;\
+    \} else \{\
+        dns_count[src_ip] = 1;\
+    \}\
+\
+    # Count DNS requests to destination IP address\
+    local dest_ip = c$id$resp_h;\
+    if (dest_ip in dns_dest) \{\
+        dns_dest[dest_ip] += 1;\
+    \} else \{\
+        dns_dest[dest_ip] = 1;\
+    \}\
+\
+    # Track the size of DNS requests\
+    if (src_ip in dns_size) \{\
+        dns_size[src_ip] += c$orig$size;\
+    \} else \{\
+        dns_size[src_ip] = c$orig$size;\
+    \}\
+\
+    # Identify Zone Transfers by the query type\
+    if (qtype == 252) \{ # 252 corresponds to AXFR (Zone Transfer)\
+        print fmt("Zone Transfer to %s", src_ip);\
+    \}\
+\}\
+\
+event zeek_done() \{\
+    # Initiate a variable to track the highest count\
+    local count_ip: addr = 0.0.0.0;\
+    local top_count: count = 0;\
+\
+    for (ip in dns_count) \{\
+        if (dns_count[ip] > top_count) \{\
+            count_ip = ip;\
+            top_count = dns_count[ip];\
+        \}\
+    \}\
+\
+    # Initiate variables to track the largest size\
+    local size_ip: addr = 0.0.0.0;\
+    local top_size: count = 0;\
+\
+    for (ip in dns_size) \{\
+        if (dns_size[ip] > top_size) \{\
+            size_ip = ip;\
+            top_size = dns_size[ip];\
+        \}\
+    \}\
+\
+    # Print the information to the console\
+    print fmt("%s made the most DNS requests (%d requests)", count_ip, top_count);\
+    print fmt("%s had the largest total DNS request size (%d bytes)", size_ip, top_size);\
+\
+    # Print DNS destination information\
+    for (ip in dns_dest) \{\
+        print fmt("%s was a destination for %d DNS requests", ip, dns_dest[ip]);\
+    \}\
+\}\
+}

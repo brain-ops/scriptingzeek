@@ -1,0 +1,140 @@
+import time
+import random
+from selenium import webdriver
+from selenium_stealth import stealth
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+
+# Path to ChromeDriver (if not in system PATH)
+chromedriver_path = "C:\\path\\to\\chromedriver.exe"  # Update this if needed
+
+# Configure Selenium options for Windows 10
+opt = webdriver.ChromeOptions()
+opt.add_experimental_option("excludeSwitches", ["enable-automation"])
+opt.add_argument("--disable-popup-blocking")
+opt.add_argument("--start-maximized")
+
+# Initialize WebDriver
+driver = webdriver.Chrome(executable_path=chromedriver_path, options=opt)
+
+# Apply stealth settings
+stealth(driver,
+        languages=["en-US", "en"],
+        vendor="Google Inc.",
+        platform="Win32",
+        webgl_vendor="Intel Inc.",
+        renderer="Intel Iris OpenGL Engine",
+        fix_hairline=True,
+        )
+
+# Open Best Buy product page
+driver.get("https://www.bestbuy.com/site/logitech-c920s-pro-1080p-webcam-with-privacy-shutter-black/6321794.p?skuId=6321794")
+time.sleep(5)
+
+foundButton = False
+while not foundButton:
+    try:
+        addToCartButton = driver.find_element(By.CLASS_NAME, "add-to-cart-button")
+        if "c-button-disabled" in addToCartButton.get_attribute("class"):
+            time.sleep(30)
+            driver.refresh()
+        else:
+            foundButton = True
+    except NoSuchElementException:
+        time.sleep(10)
+        driver.refresh()
+
+# Click "Add to Cart"
+addToCartButton.click()
+
+# Click "Go to Cart" button
+goToCart = WebDriverWait(driver, 120).until(
+    EC.element_to_be_clickable((By.XPATH, "//a[contains(text(), 'Cart')]"))
+)
+goToCart.click()
+
+# Proceed with checkout
+shipping = WebDriverWait(driver, 120).until(
+    EC.element_to_be_clickable((By.CSS_SELECTOR, "input[id*='fulfillment-shipping']"))
+)
+shipping.click()
+time.sleep(random.uniform(0, 3))
+
+checkoutBtn = driver.find_element(By.CLASS_NAME, "btn-primary")
+checkoutBtn.click()
+
+continueAsGuest = WebDriverWait(driver, 120).until(
+    EC.element_to_be_clickable((By.CLASS_NAME, "guest"))
+)
+continueAsGuest.click()
+
+# Enter user details
+firstName = WebDriverWait(driver, 120).until(EC.element_to_be_clickable((By.NAME, "firstName")))
+for i in "Bucko":
+    firstName.send_keys(i)
+    time.sleep(random.uniform(0, 0.5))
+
+lastName = driver.find_element(By.NAME, "lastName")
+for i in "Slim":
+    lastName.send_keys(i)
+    time.sleep(random.uniform(0, 0.5))
+
+street = driver.find_element(By.NAME, "street")
+for i in "2008 Wen":
+    street.send_keys(i)
+    time.sleep(random.uniform(0, 0.5))
+
+auto = driver.find_element(By.CLASS_NAME, 'tb-input.autocomplete__input')
+auto.send_keys(Keys.ARROW_DOWN)
+time.sleep(random.uniform(0, 3))
+auto.send_keys(Keys.ENTER)
+time.sleep(random.uniform(0, 3))
+
+apply = driver.find_element(By.CLASS_NAME, 'c-button.c-button-secondary.c-button-md.new-address-form__button')
+apply.click()
+time.sleep(3)
+
+emailAddress = driver.find_element(By.ID, "user.emailAddress")
+emailAddress.send_keys("thebestbuybot@protonmail.com")
+
+phone = driver.find_element(By.ID, "user.phone")
+phone.send_keys("3048990040")
+
+payInfoButton = driver.find_element(By.CLASS_NAME, "button--continue")
+payInfoButton.click()
+time.sleep(5)
+
+# Enter credit card details
+cardInfo = driver.find_element(By.ID, "number")
+cardInfo.send_keys("4737029888253631")
+time.sleep(3)
+
+try:
+    selectMonth = Select(driver.find_element(By.ID, "expMonth"))
+except NoSuchElementException:
+    selectMonth = Select(driver.find_element(By.NAME, "expiration-month"))
+selectMonth.select_by_visible_text("04")
+
+try:
+    selectYear = Select(driver.find_element(By.NAME, "expiration-year"))
+except NoSuchElementException:
+    selectYear = Select(driver.find_element(By.NAME, "expYear"))
+selectYear.select_by_visible_text("2028")
+
+try:
+    cardCVV = driver.find_element(By.ID, "credit-card-cvv")
+except NoSuchElementException:
+    cardCVV = driver.find_element(By.ID, "cvv")
+cardCVV.send_keys("818")
+
+finishPay = WebDriverWait(driver, 120).until(
+    EC.element_to_be_clickable((By.CLASS_NAME, "btn-primary"))
+)
+finishPay.click()
+
+time.sleep(60)
+driver.quit()

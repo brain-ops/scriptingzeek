@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "C:/Users/Jacob/AppData/Local/Programs/Python/Python37/test.py", line 3, in <module>
+    from selenium import webdriver
+  File "C:\Users\Jacob\AppData\Local\Programs\Python\Python37\lib\site-packages\selenium\webdriver\__init__.py", line 20, in <module>
+    from .chrome.webdriver import WebDriver as Chrome  # noqa
+  File "C:\Users\Jacob\AppData\Local\Programs\Python\Python37\lib\site-packages\selenium\webdriver\chrome\webdriver.py", line 18, in <module>
+    from selenium.webdriver.chromium.webdriver import ChromiumDriver
+  File "C:\Users\Jacob\AppData\Local\Programs\Python\Python37\lib\site-packages\selenium\webdriver\chromium\webdriver.py", line 18, in <module>
+    from selenium.webdriver.chromium.remote_connection import ChromiumRemoteConnection
+  File "C:\Users\Jacob\AppData\Local\Programs\Python\Python37\lib\site-packages\selenium\webdriver\chromium\remote_connection.py", line 18, in <module>
+    from selenium.webdriver.remote.remote_connection import RemoteConnection
+  File "C:\Users\Jacob\AppData\Local\Programs\Python\Python37\lib\site-packages\selenium\webdriver\remote\remote_connection.py", line 27, in <module>
+    import urllib3
+  File "C:\Users\Jacob\AppData\Local\Programs\Python\Python37\lib\site-packages\urllib3\__init__.py", line 42, in <module>
+    "urllib3 v2.0 only supports OpenSSL 1.1.1+, currently "
+ImportError: urllib3 v2.0 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'OpenSSL 1.1.0j  20 Nov 2018'. See: https://github.com/urllib3/urllib3/issues/2168
